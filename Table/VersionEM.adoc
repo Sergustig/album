@@ -1,0 +1,17 @@
+[%autowidth]
+|===
+|№|Наименование ЭС |Версия ЭС
+
+|[red]#1#
+|[red]#cbdc.020 CustomerIdentifiersRequest#
+|[red]#2025.01#
+
+|2
+|cbdc.020 CustomerDataFIAdministrationRequest
+|2025.07
+
+|3
+|cbdc.020 OrganisationIdentifiersRequest
+|2025.01
+
+|===

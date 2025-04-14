@@ -1,0 +1,81 @@
+:sectnums:
+
+==== Область применения
+
+В разделе описан обмен Субъектов ПлЦР при непрохождении входного контроля ЭС. Данный обмен применим ко всем типам ЭС, если иное не оговорено в описании конкретного процесса.
+
+==== Обмен через ФП с ПлЦР
+
+
+
+[plantuml, format="png", id="exchange_1"]
+
+----
+include::Process_1.puml[]
+----
+
+===== Описание
+
+Входной контроль на КК ПлЦР не пройден.
+
+===== Применяемые форматы сообщений
+
+* Запрос - ЭС из Альбома сообщений;
+* Результат контроля на КК ПлЦР (cbdc.666 CCStatusReport).
+
+===== Последовательность обмена
+
+. Клиент-ФЛ/Клиент-ЮЛ с использованием Приложения Клиента/ДБО ФП формирует ЭС из Альбома Сообщений и направляет его ФП.
+. ФП проводит входные контроли ЭС и в случае успешного прохождения проверок направляет на ПлЦР ЭС в соответствии со схемой обмена.
+. Контур контроля (КК) ПлЦР осуществляет входной контроль полученного ЭС. В рамках процедуры входного контроля после расшифрования ЭС осуществляются следующие контроли:
+
+* Контроль подлинности и контроль целостности ЭС;
+* Структурный контроль ЭС;
+* Логические контроли ЭС;
+* Контроль на дублирование ЭС.
+
+. В случае В случае неуспешного прохождения входного контроля КК ПлЦР формирует в адрес ФП ЭС "Результат контроля на КК ПлЦР" (cbdc.666 CCStatusReport).
+. ФП после получения ЭС "Результаты контроля на КК ПлЦР" (cbdc.666 CCStatusReport) информирует Клиента-ФЛ/Клиента-ЮЛ о невозможности исполнения Запроса.
+
+*Пример 'cbdc.777.001.04.SETDTSenderNotification'*
+
+[source,xsd]
+----
+
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid Technologies Online Tools 1.0 (https://www.liquid-technologies.com) -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:cbdc.777.001.04.SETDTSenderNotification_2022.2" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:cbdc.777.001.04.SETDTSenderNotification_2022.2 schema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Ntfctn>
+    <MsgHdr>
+      <MsgId>802d5d6d-d8ca-4b4d-be39-d42b69a6b9a8</MsgId>
+      <CreDt>2011-08-13T17:19:11.70</CreDt>
+      <Fr>g.ct.cbrdc.prt.prsn.271ee69e-cd0c-4fea-87d2-f6e5c7432d5e</Fr>
+      <To>g.vg.cbrdc.prt.depo.cd293272-4fad-4b91-8917-9bcfdefefbad</To>
+      <OprId>b6e686d3-d20c-42aa-9aaa-feadf01ffcfe</OprId>
+    </MsgHdr>
+    <OprInfAndSts>
+      <StsAndRsnInf>
+        <OprWthtCnsnt>0</OprWthtCnsnt>
+      </StsAndRsnInf>
+      <OprInf>
+        <DCTrfC2CInf>
+          <TrfAmt>
+            <TtlAmt Ccy="RUB">4739930.24</TtlAmt>
+          </TrfAmt>
+          <DCSndr>
+            <Wllt>
+              <Id>g.hl.cbrdc.wlt.iss.0e8768d0-3385-42bb-943b-e178ffd7e7ac</Id>
+              <Bal>
+                <TtlAmt Ccy="RUB">4569960.23</TtlAmt>
+              </Bal>
+            </Wllt>
+          </DCSndr>
+          <SttlmDtTm>2015-10-28T05:46:16.97</SttlmDtTm>
+          <SETId>ba459c79-fc76-437d-b855-aca4a4bec779</SETId>
+          <SETNm>string</SETNm>
+        </DCTrfC2CInf>
+      </OprInf>
+    </OprInfAndSts>
+  </Ntfctn>
+</Document>
+----

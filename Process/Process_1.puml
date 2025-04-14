@@ -1,0 +1,28 @@
+@startuml
+/'Участники'/
+
+participant "Клиент-ФЛ/Клиент-ЮЛ" as UL
+participant "ФП" as FP
+participant "КК ПлЦР" as RORD
+
+/'Действия'/
+autonumber
+skinparam MaxMessageSize 200
+
+UL -> FP : Album message\nСообщение Альбома
+activate UL
+activate FP
+FP -> RORD : Album message\nСообщение Альбома
+activate RORD
+RORD -> RORD : Входной контроль
+activate RORD
+deactivate RORD
+
+opt Входной контроль не пройден
+    RORD --> FP : cbdc.666 CCStatusReport/nРезультат контроля на КК ПлЦР
+    deactivate RORD
+    FP --> UL : Уведомление клиента о\nневозможности исполнения запроса
+    deactivate FP
+    deactivate UL
+end
+@enduml
