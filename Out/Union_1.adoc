@@ -4,6 +4,8 @@ include::../ContentElements/Title.adoc[]
 :toc:
 :toc-title: Содержание
 
+// Добавляем глоссарий
+
 == Глоссарий
 
 include::../ContentElements/glossary.adoc[]
