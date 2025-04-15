@@ -26,10 +26,16 @@ include::../Table/VersionEM.adoc[]
 include::../Process/Process_1.adoc[]
 include::../Process/Process_2.adoc[]
 
+////
 == Пример служебного конверта
 [source, xsd]
 include::../Examples/Envelope.xml[]
 
 === Структура служебного конверта
 image::../images/Structure_envelope.png[align="center"]
+
+////
+
+=== Котейка
+image::../Process/C2B/Images/Cat.jpg[]
 

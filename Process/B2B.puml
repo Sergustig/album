@@ -1,5 +1,6 @@
 @startuml
 
+
 ФП -> РОРД: [[./XSD/cbdc.006.001.01.B2B_2024.03.xsd cbdc.006.001.01.B2B]]
 РОРД --> ФП: [[./XSD/cbdc.013.001.04.B2BPossibilityResponse_2024.03.xsd cbdc.006.001.01.B2B]]
 
