@@ -1,5 +1,7 @@
 :sectnums:
 
+:author: Собин С.Н.
+
 include::../ContentElements/Title.adoc[]
 :toc:
 :toc-title: Содержание
@@ -15,6 +17,7 @@ include::../ContentElements/glossary.adoc[]
 Обмен между участниками Системы ЦР осуществляется с применением следующих ЭС:
 
 include::../Table/VersionEM.adoc[]
+
 // Надо будет добавить ЭС
 
 == Порядок обмена ЭС в Системе Цифрового рубля
@@ -26,7 +29,12 @@ include::../Table/VersionEM.adoc[]
 include::../Process/Process_1.adoc[]
 include::../Process/Process_2.adoc[]
 
-////
+
+
+=== C2C
+
+include::../Process/C2C/C2C.adoc[]
+
 == Пример служебного конверта
 [source, xsd]
 include::../Examples/Envelope.xml[]
@@ -34,8 +42,7 @@ include::../Examples/Envelope.xml[]
 === Структура служебного конверта
 image::../images/Structure_envelope.png[align="center"]
 
-////
 
-=== Котейка
-image::../Process/C2B/Images/Cat.jpg[]
+
+=== G2X
 

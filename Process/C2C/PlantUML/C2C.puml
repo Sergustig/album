@@ -1,0 +1,100 @@
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title C2C with AML/CFT
+==C2C==
+/'Участники'/
+participant "Клиент плательщик" as CL_PAY
+participant "ФП плательщика" as FI_PAY
+participant "РОРД" as RORD
+participant "ФП получателя" as FI_REC
+participant "Клиент получатель" as CL_REC
+
+/'Взаимодействия'/
+
+autonumber
+skinparam MaxMessageSize 500
+
+activate CL_PAY
+CL_PAY-> FI_PAY : Запрос возможности\n С2С перевода ЦР\n(cbdc.012 C2CPossibilityRequest)\n
+activate FI_PAY
+FI_PAY-> RORD : Запрос возможности\n С2С перевода ЦР\n(cbdc.012 C2CPossibilityRequest)\n
+activate RORD
+RORD -> RORD : Контроли
+activate RORD
+deactivate RORD
+RORD -> RORD : Формирование эталона ЭС,\n эталона Дайджеста РР\n
+activate RORD
+deactivate RORD
+RORD --[#blue]>> FI_PAY : Ответ на запрос\n возможности С2С перевода ЦР\n<color blue>(cbdc.014 InfoResponse)</color>\n + Доп.атрибуты:\n ИНН получателя платежа\n ФИО получателя платежа\n Код страны получателя платежа\n (для ФП)\n
+RORD -->> FI_PAY : Ответ на запрос\n возможности С2С перевода ЦР\n(cbdc.013 C2CPossibilityResponse)\n (для Клиента)
+note left : 1. Что делать если одно из сообщений не поступит?\n2. На мой взгляд тут должен быть неуспешный сценарий в т.ч.\n3. В ответе на запрос статуса ЭС  какой ответ должны показать?
+deactivate RORD
+FI_PAY --> CL_PAY : Ответ на запрос\n возможности С2С перевода ЦР\n(cbdc.013 C2CPossibilityResponse)\n Доп.атрибуты Клиенту не передаются
+CL_PAY -> CL_PAY : ПМ БР\n Расшифрование\n Проверка ЭП
+activate CL_PAY
+deactivate CL_PAY
+CL_PAY -> CL_PAY : ПМ БР\n Формирование фингерпринт\n Подписание Дайджеста РР\n Подписание ЭС\n Зашифрование
+activate CL_PAY
+deactivate CL_PAY
+CL_PAY-> FI_PAY : Распоряжение Клиента на перевод ЦР (C2C)\n(cbdc.003 CustomerDCTransferC2C)
+
+alt ПОД/ФТ. Онлайн контроль пройден
+    FI_PAY-> RORD : Распоряжение Клиента на перевод ЦР (C2C)\n(cbdc.003 CustomerDCTransferC2C)
+    activate RORD
+    RORD -> RORD : Контроли
+    activate RORD
+    deactivate RORD
+    RORD -> RORD : Перевод ЦР
+    activate RORD
+    deactivate RORD
+    RORD --> FI_PAY : Извещение Клиента - плательщика\n об исполнении перевода ЦР (С2С)\n (cbdc.777 DCTransferC2CSenderNotification)
+    FI_PAY --> CL_PAY : Извещение Клиента - плательщика\n об исполнении перевода ЦР (С2С)\n (cbdc.777 DCTransferC2CSenderNotification)
+    RORD --[#blue]> FI_REC : Извещение ФП получателя\n об исполнении перевода ЦР (С2С)\n + Доп.атрибуты:\n ИНН плательщика\n ФИО плательщика\n Код страны плательщика\n <color blue>(cbdc.778 InfoNotification)</color>
+    activate FI_REC
+    RORD --> FI_REC : Извещение Клиента - получателя\n об исполнении перевода ЦР (С2С)\n (cbdc.777 DCTransferC2CRecipientNotification)
+    deactivate RORD
+      
+    FI_REC --> CL_REC : Извещение Клиента - получателя\n об исполнении перевода ЦР (С2С)\n (cbdc.777 DCTransferC2CRecipientNotification)\n Доп.атрибуты Клиенту не передаются
+    deactivate FI_REC
+else ПОД/ФТ. Онлайн контроль не пройден.
+	note over FI_PAY, RORD: Обмен согласно процесса AML/CFT, в рамках которого присваивается новый OperId.
+end
+==AML/CFT - вынесен в отдельный процесс, на который необходимо ссылаться при переводах С2С, С2В, В2С, В2В (для C2G, возможно, будет другой обмен)==   
+alt ПОД/ФТ. Онлайн контроль не пройден. Не требуется приостановка (ручной контроль)
+    FI_PAY-[#blue]> RORD : Извещение об отказе по ПОД/ФТ\n по причине приостановки (онлайн контроль)\n <color blue>(cbdc.070 Rejection)</color>\n Содержит причину отказа по ПОД/ФТ и\n подписанное клиентом распоряжение\n (информация об операции, по\n которой отказано по ПОД/ФТ)
+    activate RORD
+    RORD--[#blue]> FI_PAY : Квитанция о получении\n извещения об отказе по ПОД/ФТ\n по причине приостановки (онлайн контроль)\n <color blue>(cbdc.071 RejectionReceipt)</color>
+    RORD -[#blue]> RORD : В Реестр отказов в совершении операций\n загружена информация об операции\n и причина отказа по ПОД/ФТ
+    activate RORD
+    deactivate RORD
+    FI_PAY --[#green]> CL_PAY : Извещение об отказе в проведении\n операции по причине ПОД/ФТ\n Не регламентируется Альбомом ЦР
+    deactivate RORD
+
+else ПОД/ФТ. Онлайн контроль не пройден. Требуется приостановка (ручной контроль)
+    FI_PAY-[#blue]> RORD : Извещение об отказе по ПОД/ФТ\n по причине приостановки (ручной контроль)\n <color blue>(cbdc.070 Delay)</color>\n  Содержит причину отказа по ПОД/ФТ и\n подписанное клиентом распоряжение\n (информация об операции, по\n которой отказано по ПОД/ФТ)
+    activate RORD
+    RORD--[#blue]> FI_PAY : Квитанция о получении\n извещения об отказе по ПОД/ФТ\n по причине приостановки (ручной контроль)\n <color blue>(cbdc.071 DelayReceipt)</color>
+    deactivate RORD    
+    FI_PAY --[#green]> CL_PAY : Извещение об отказе в проведении\n операции по причине\n приостановки в связи с ПОД/ФТ\n Не регламентируется Альбомом ЦР
+    FI_PAY -[#blue]> FI_PAY : Процедуры контроля\n по ПОД/ФТ (ручной контроль)\n Используется информация\n из подписанного ЭС от Клиента\n и доп. атрибутов
+    activate FI_PAY
+    deactivate FI_PAY
+    alt ПОД/ФТ. Ручной контроль пройден
+        FI_PAY --[#green]> CL_PAY : Извещение о возможности повторного\n проведения операции\n (с исходными реквизитами)\n Не регламентируется Альбомом ЦР
+    else ПОД/ФТ. Ручной контроль не пройден
+        FI_PAY-[#blue]> RORD : Извещение об отказе по ПОД/ФТ\n после приостановки (окончательный отказ)\n <color blue>(cbdc.070 Rejection)</color>\n  Содержит причину отказа по ПОД/ФТ и\n подписанное клиентом распоряжение\n (информация об операции, по\n которой отказано по ПОД/ФТ)
+        activate RORD
+        RORD--[#blue]> FI_PAY : Квитанция о получении\n извещения об отказе по ПОД/ФТ\n по причине приостановки (окончательный отказ)\n <color blue>(cbdc.071 RejectionReceipt)</color>
+        RORD -[#blue]> RORD : В Реестр отказов в совершении операций\n загружена информация об операции\n и причина отказа по ПОД/ФТ\n после приостановки (окончательный отказ)
+        activate RORD
+        deactivate RORD
+        FI_PAY --[#green]> CL_PAY : Извещение об отказе в проведении\n операции по причине ПОД/ФТ\n Не регламентируется Альбомом ЦР
+        deactivate RORD
+        deactivate FI_PAY
+        deactivate CL_PAY   
+    end
+end 
+
+@enduml

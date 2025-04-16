@@ -1,1 +1,0 @@
-image::../../Process/C2B/Images/Cat.jpg[]
